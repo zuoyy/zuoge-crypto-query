@@ -1,0 +1,7 @@
+interface:
+  display_name: "Zuoge Crypto Query"
+  short_description: "Fast Chinese account and position query replies"
+  default_prompt: "Use $zuoge-crypto-query for Chinese account, position-list, and trading-context queries only. This skill should handle requests like `查下账户`, `看看持仓`, `当前有哪些仓位`, `查 BTCUSDT`, and `查 trading context`. Read references/query-reply-quickstart.zh-CN.md and answer directly from that minimal guide. Prefer `GET /api/v1/agent/account-context` for account summary, current positions, and account-level risk overview. Use `GET /api/v1/agent/trading-context` only when the user explicitly specifies a symbol or explicitly asks for trading context. Do not consult signal schema, payload, OpenAPI, or trade submission references. Translate long/short to 多头/空头 and cross/isolated to 全仓/逐仓. Format money and price fields as USDT-style `$1234.56`, and negatives as `-$48.60`. Format snapshot/update times as `YYYY-MM-DD HH:MM:SS` in Beijing time, and never output raw RFC3339/ISO timestamps like `2026-05-05T04:43:03.68039Z`. If the user only asked for account info or account overview, return the account summary only and do not expand the `positions` list unless the user explicitly asked to see positions or a detailed account breakdown. If the user did not specify a symbol, never append any symbol-specific section. If the user is actually asking to generate, validate, or submit a signal payload, do not use this skill."
+
+policy:
+  allow_implicit_invocation: true
