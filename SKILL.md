@@ -34,15 +34,11 @@ Before querying the API, read these env vars from the runtime environment:
 | `ZUOGE_CRYPTO_BASE_URL` | `http://127.0.0.1:18000` | API server base URL |
 | `ZUOGE_CRYPTO_API_KEY` | `zg-6cd...8359` | Bearer token for agent auth |
 
-If `ZUOGE_CRYPTO_BASE_URL` is not set, fall back to the latest account-snapshot.json in the run artifacts directory (see Fallback section below).
+If `ZUOGE_CRYPTO_BASE_URL` is not set, reply with 暂无法获取账户信息.
 
 ## Authentication
 
 All agent API calls require `Authorization: Bearer <ZUOGE_CRYPTO_API_KEY>` header.
-
-## Data Source
-
-Read from the API-key protected agent query endpoints with this priority:
 
 ## Data Source
 

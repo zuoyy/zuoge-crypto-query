@@ -16,8 +16,6 @@
 
 ## 数据来源
 
-## 数据来源
-
 - 用户只问账户、账户快览、当前持仓、账户风险概况时，优先使用 `GET ${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/portfolio/snapshot`
 - 用户明确提到具体 `symbol` 时，使用 `GET ${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/strategy/context/{symbol}`
 - 用户明确要整体 `trading context` 时，使用 `GET ${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/strategy/context`
