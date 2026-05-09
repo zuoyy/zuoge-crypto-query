@@ -7,8 +7,11 @@
 
 ## 数据来源
 
-- 用户只问账户、账户快览、当前持仓、账户风险概况时，优先使用 `GET /api/v1/agent/account-context`
-- 用户明确提到具体 `symbol` 或明确要 `trading context` 时，再使用 `GET /api/v1/agent/trading-context`
+- 用户只问账户、账户快览、当前持仓、账户风险概况时，优先使用 `GET ${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/portfolio/snapshot`
+- 用户明确提到具体 `symbol` 时，再使用 `GET ${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/strategy/context/{symbol}`
+- 用户明确要整体 `trading context` 时，再使用 `GET ${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/strategy/context`
+- 所有请求都使用 `ZUOGE_CRYPTO_API_KEY`，通过 `Authorization: Bearer <ZUOGE_CRYPTO_API_KEY>` 或 `X-API-Key: <ZUOGE_CRYPTO_API_KEY>` 认证；不要调用非 `/api/v1/agent/` 路由
+- Hermes 安装 skill 后配置：`ZUOGE_CRYPTO_BASE_URL=http://127.0.0.1:18000`，`ZUOGE_CRYPTO_API_KEY=zg-6cddba3f0499fb41cb86f3bf87af8359`
 - 如果调用方已经持有 JSON，就直接总结，不重复请求
 
 ## 先判定意图

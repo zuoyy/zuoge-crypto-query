@@ -21,20 +21,34 @@ Typical requests:
 
 ## Data Source
 
-Read from the agent query endpoints with this priority:
+Read from the API-key protected agent query endpoints with this priority:
 
-- `GET /api/v1/agent/account-context` for account summary, current positions, and account-level risk overview
-- `GET /api/v1/agent/trading-context` only when the user explicitly asks about a specific symbol or explicitly asks for trading context
+- `GET ${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/portfolio/snapshot` for account summary, current positions, and account-level risk overview
+- `GET ${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/strategy/context` only when the user explicitly asks for trading context
+- `GET ${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/strategy/context/{symbol}` only when the user explicitly asks about a specific symbol
 
 If the caller already has JSON context, summarize that directly and do not re-fetch.
+
+Authenticate agent requests with `ZUOGE_CRYPTO_API_KEY` using either `Authorization: Bearer <ZUOGE_CRYPTO_API_KEY>` or `X-API-Key: <ZUOGE_CRYPTO_API_KEY>`. Do not use WebUI session cookies for this skill, and do not call non-`/api/v1/agent/` routes.
+
+## Hermes Environment
+
+After installing this skill into Hermes, configure:
+
+```bash
+export ZUOGE_CRYPTO_BASE_URL="http://127.0.0.1:18000"
+export ZUOGE_CRYPTO_API_KEY="zg-6cddba3f0499fb41cb86f3bf87af8359"
+```
+
+The backend API process must set `AGENT_API_KEY` to the same value as `ZUOGE_CRYPTO_API_KEY`.
 
 ## Workflow
 
 1. Decide whether the user wants account summary, position list, or symbol trading context.
-2. If the user did not specify a symbol, fetch `account-context` only.
-3. If the user explicitly specified a symbol or asked for trading context, fetch `trading-context`.
-3. Start with [references/query-reply-quickstart.zh-CN.md](references/query-reply-quickstart.zh-CN.md).
-4. Reply in Simplified Chinese.
+2. If the user did not specify a symbol, fetch `${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/portfolio/snapshot` only.
+3. If the user explicitly specified a symbol or asked for trading context, fetch `${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/strategy/context` or `${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/strategy/context/{symbol}`.
+4. Start with [references/query-reply-quickstart.zh-CN.md](references/query-reply-quickstart.zh-CN.md).
+5. Reply in Simplified Chinese.
 
 If the user did not specify a symbol, do not surface any symbol-specific results in the final answer.
 If the user only asked for account info or account overview, do not expand the `positions` list unless they explicitly asked to see positions or a detailed account breakdown.
