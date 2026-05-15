@@ -16,7 +16,11 @@
 
 ## 数据来源
 
-- 用户只问账户、账户快览、当前持仓、账户风险概况时，优先使用 `GET ${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/portfolio/snapshot`
+- 用户只问账户、账户快览、账户风险概况时，优先使用 `GET ${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/portfolio/snapshot`
+- 用户问当前持仓、持仓列表、某个策略的持仓时，使用 `GET ${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/positions`
+- 如果用户指定策略 ID，给持仓接口追加 `?strategy_id=<id>`，例如 `/api/v1/agent/positions?strategy_id=workflow_distilled_funnel`
+- 用户问某个策略的成交、fills、交易记录时，使用 `/api/v1/agent/executions/recent?strategy_id=<id>`；不要用未过滤的全账户成交回答策略级问题
+- 用户问某个策略的风控参数、预算、资金池时，使用 `/api/v1/agent/strategy-risk-allocations/<id>` 或带 `strategy_id` 的 strategy context
 - 用户明确提到具体 `symbol` 时，使用 `GET ${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/strategy/context/{symbol}`
 - 用户明确要整体 `trading context` 时，使用 `GET ${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/strategy/context`
 - 所有请求使用 `ZUOGE_CRYPTO_API_KEY` 通过 `Authorization: Bearer <key>` 认证
@@ -25,7 +29,7 @@
 ## 先判定意图
 
 - 用户只问账户：走 `账户快览`，除非明确要求详细
-- 用户问持仓列表：走 `持仓列表标准版`，除非明确要求快速或详细
+- 用户问持仓列表：走 `持仓列表标准版`，除非明确要求快速或详细；如果指定策略，只统计该策略名下持仓
 - 用户提到具体 `symbol` 或 `trading context`：走 `账户 + 目标标的`
 
 ## 严格边界
@@ -109,7 +113,7 @@
 ## 最小字段提示
 
 - 账户快览：只需要 `equity`、`available_cash`、`total_exposure`、`unrealized_pnl`、`open_positions`、`updated_at`
-- 持仓列表：优先使用 `snapshot.positions`，只需要 `symbol`、`side`、`quantity`、`entry_price`、`unrealized_pnl`、`leverage`、`margin_type`
+- 持仓列表：使用 `/agent/positions` 的 `items`，只需要 `symbol`、`position_side`、`quantity`、`avg_entry_price`、`unrealized_pnl`、`leverage`、`margin_type`、`owner_strategy_id`
 - 单标的查询：在账户字段基础上，再加 `symbol_position.*`
 
 ## 最小字段映射

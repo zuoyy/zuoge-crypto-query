@@ -45,8 +45,13 @@ All agent API calls require `Authorization: Bearer <ZUOGE_CRYPTO_API_KEY>` heade
 Read from the API-key protected agent query endpoints with this priority:
 
 - `GET ${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/portfolio/snapshot` for account summary, current positions, and account-level risk overview
+- `GET ${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/positions` for the current position list; append `?strategy_id=<id>` when the user asks for one strategy's positions
+- `GET ${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/executions/recent?strategy_id=<id>` for one strategy's recent fills/trades
+- `GET ${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/strategy-risk-allocations/<id>` for one strategy's risk budget settings
 - `GET ${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/strategy/context` only when the user explicitly asks for trading context
 - `GET ${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/strategy/context/{symbol}` only when the user explicitly asks about a specific symbol
+
+When the user asks for one strategy's positions, fills/trades, risk budget, or context, every request must include that `strategy_id`. Do not answer a strategy-level question from whole-account `/portfolio/snapshot` or unfiltered executions.
 
 If the caller already has JSON context, summarize that directly and do not re-fetch.
 
@@ -56,11 +61,13 @@ Authenticate agent requests with `ZUOGE_CRYPTO_API_KEY` using `Authorization: Be
 
 1. Read `ZUOGE_CRYPTO_BASE_URL` and `ZUOGE_CRYPTO_API_KEY` from env vars.
 2. Decide whether the user wants account summary, position list, or symbol trading context.
-3. If the user did not specify a symbol, fetch `${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/portfolio/snapshot` only.
-4. If the user explicitly specified a symbol or asked for trading context, fetch `${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/strategy/context` or `${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/strategy/context/{symbol}`.
-5. Start with [references/query-reply-quickstart.zh-CN.md](references/query-reply-quickstart.zh-CN.md).
-6. Reply in Simplified Chinese.
-7. If the live API returns any error (503/unauthorized/not-configured) or `ZUOGE_CRYPTO_BASE_URL` is not set, reply with `暂无法获取账户信息` and do not fabricate.
+3. If the user asked for positions, fetch `${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/positions`; if they specified a strategy, include `strategy_id`.
+4. If the user did not ask for positions and did not specify a symbol, fetch `${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/portfolio/snapshot` only.
+5. If the user asked for strategy fills/trades or risk budget, require a strategy ID and use `/agent/executions/recent?strategy_id=<id>` or `/agent/strategy-risk-allocations/<id>`.
+6. If the user explicitly specified a symbol or asked for trading context, fetch `${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/strategy/context?strategy_id=<id>` or `${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/strategy/context/{symbol}?strategy_id=<id>` when a strategy ID is in scope.
+7. Start with [references/query-reply-quickstart.zh-CN.md](references/query-reply-quickstart.zh-CN.md).
+8. Reply in Simplified Chinese.
+9. If the live API returns any error (503/unauthorized/not-configured) or `ZUOGE_CRYPTO_BASE_URL` is not set, reply with `暂无法获取账户信息` and do not fabricate.
 
 If the user did not specify a symbol, do not surface any symbol-specific results in the final answer.
 If the user only asked for account info or account overview, do not expand the `positions` list unless they explicitly asked to see positions or a detailed account breakdown.
