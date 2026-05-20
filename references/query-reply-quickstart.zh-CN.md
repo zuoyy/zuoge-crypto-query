@@ -2,7 +2,7 @@
 
 ## 用途
 
-当用户只是要查询账户、持仓列表、某策略成交或某策略风控预算时，只看这份文件即可。
+当用户只是要查询账户或持仓列表时，只看这份文件即可。
 默认不要继续读取信号生成 schema、OpenAPI、设计文档、few-shot 或大样例。
 当用户要求复盘、策略表现、盈亏归因或拒绝原因时，改读 [review-data.zh-CN.md](review-data.zh-CN.md)。
 
@@ -20,8 +20,6 @@
 - 用户只问账户、账户快览、账户风险概况时，优先使用 `GET ${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/portfolio/snapshot`
 - 用户问当前持仓、持仓列表、某个策略的持仓时，使用 `GET ${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/positions`
 - 如果用户指定策略 ID，给持仓接口追加 `?strategy_id=<id>`，例如 `/api/v1/agent/positions?strategy_id=workflow_distilled_funnel`
-- 用户问某个策略的成交、fills、交易记录时，使用 `/api/v1/agent/executions/recent?strategy_id=<id>`；不要用未过滤的全账户成交回答策略级问题
-- 用户问某个策略的风控参数、预算、资金池时，使用 `/api/v1/agent/strategy-risk-allocations/<id>`
 - 所有请求使用 `ZUOGE_CRYPTO_API_KEY` 通过 `Authorization: Bearer <key>` 认证
 - 如果调用方已经持有 JSON，就直接总结，不重复请求
 
@@ -29,16 +27,14 @@
 
 - 用户只问账户：走 `账户快览`，除非明确要求详细
 - 用户问持仓列表：走 `持仓列表标准版`，除非明确要求快速或详细；如果指定策略，只统计该策略名下持仓
-- 用户问某策略成交、fills、交易记录：走 `策略成交简版`
-- 用户问某策略风控预算、资金池：走 `策略风控预算简版`
 
 ## 严格边界
 
 - 用户没有指定 `symbol` 时，只输出账户快览或账户概览，不要追加任何"探针结果""补一条某标的情况""顺手看下 BTCUSDT"之类内容
 - 用户只说"查询账户信息""查询账户快览""查下账户"时，默认只输出账户级摘要；即使底层 `snapshot` 带有 `positions`，也不要展开持仓明细
 - 只有用户明确要求"看看持仓""列出持仓""当前有哪些仓位""详细账户信息"时，才展开 `positions` 列表
-- 不要调用或输出 trading context；如果用户明确要求 trading context，回复：`当前查询技能不再读取 trading context，可以改查账户、持仓、成交或复盘数据。`
-- 用户只给标的如 `查 BTCUSDT` 时，只能从当前持仓或成交里筛这个标的；不要补行情、特征、上下文判断
+- 不要调用或输出 trading context；如果用户明确要求 trading context，回复：`当前查询技能不再读取 trading context，可以改查账户、持仓或复盘数据。`
+- 用户只给标的如 `查 BTCUSDT` 时，只能从当前持仓里筛这个标的；不要补行情、特征、上下文判断
 - **不要输出"数据来源""来源"之类的行**，回复应该是纯交易系统风格
 
 ## 展示规则
@@ -82,45 +78,10 @@
 - 主要持仓风险：{{risk_note}}
 ```
 
-## 策略成交简版模版
-
-```md
-{{strategy_id}} 最近成交如下：
-
-- 成交数量：{{fill_count}}
-- 已实现盈亏：{{realized_pnl}}
-- 手续费：{{commission}}
-
-最近明细：
-
-1. {{filled_at}} | {{symbol}} | {{side}} | 数量 {{quantity}} | 价格 {{price}} | 已实现盈亏 {{realized_pnl}}
-
-结论：
-
-- 主要观察：{{risk_note}}
-```
-
-## 策略风控预算简版模版
-
-```md
-{{strategy_id}} 风控预算如下：
-
-- 是否启用：{{enabled}}
-- 资金分配比例：{{allocation_pct}}
-- 单笔最大名义价值比例：{{max_order_notional_pct}}
-- 单标的最大敞口比例：{{max_symbol_exposure_pct}}
-- 总敞口上限比例：{{max_total_exposure_pct}}
-- 最大持仓数：{{max_positions}}
-- 最大加仓次数：{{max_add_count}}
-- 更新时间：{{updated_at}}
-```
-
 ## 最小字段提示
 
 - 账户快览：只需要 `equity`、`available_cash`、`total_exposure`、`unrealized_pnl`、`open_positions`、`updated_at`
 - 持仓列表：使用 `/agent/positions` 的 `items`，只需要 `symbol`、`position_side`、`quantity`、`avg_entry_price`、`unrealized_pnl`、`leverage`、`margin_type`、`owner_strategy_id`
-- 策略成交：使用 `/agent/executions/recent?strategy_id=<id>` 的成交条目，只需要 `filled_at`、`symbol`、`side`、`quantity`、`price`、`realized_pnl`、`commission`
-- 策略风控预算：使用 `/agent/strategy-risk-allocations/<id>`
 
 ## 最小字段映射
 
@@ -169,5 +130,5 @@
 ### Trading Context 不再支持
 
 ```md
-当前查询技能不再读取 trading context，可以改查账户、持仓、成交或复盘数据。
+当前查询技能不再读取 trading context，可以改查账户、持仓或复盘数据。
 ```
