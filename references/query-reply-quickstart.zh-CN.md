@@ -2,8 +2,9 @@
 
 ## 用途
 
-当用户只是要查询账户、持仓列表或某个标的的 trading context 时，只看这份文件即可。
+当用户只是要查询账户、持仓列表、某策略成交或某策略风控预算时，只看这份文件即可。
 默认不要继续读取信号生成 schema、OpenAPI、设计文档、few-shot 或大样例。
+当用户要求复盘、策略表现、盈亏归因或拒绝原因时，改读 [review-data.zh-CN.md](review-data.zh-CN.md)。
 
 ## 环境变量
 
@@ -20,9 +21,7 @@
 - 用户问当前持仓、持仓列表、某个策略的持仓时，使用 `GET ${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/positions`
 - 如果用户指定策略 ID，给持仓接口追加 `?strategy_id=<id>`，例如 `/api/v1/agent/positions?strategy_id=workflow_distilled_funnel`
 - 用户问某个策略的成交、fills、交易记录时，使用 `/api/v1/agent/executions/recent?strategy_id=<id>`；不要用未过滤的全账户成交回答策略级问题
-- 用户问某个策略的风控参数、预算、资金池时，使用 `/api/v1/agent/strategy-risk-allocations/<id>` 或带 `strategy_id` 的 strategy context
-- 用户明确提到具体 `symbol` 时，使用 `GET ${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/strategy/context/{symbol}`
-- 用户明确要整体 `trading context` 时，使用 `GET ${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/strategy/context`
+- 用户问某个策略的风控参数、预算、资金池时，使用 `/api/v1/agent/strategy-risk-allocations/<id>`
 - 所有请求使用 `ZUOGE_CRYPTO_API_KEY` 通过 `Authorization: Bearer <key>` 认证
 - 如果调用方已经持有 JSON，就直接总结，不重复请求
 
@@ -30,15 +29,16 @@
 
 - 用户只问账户：走 `账户快览`，除非明确要求详细
 - 用户问持仓列表：走 `持仓列表标准版`，除非明确要求快速或详细；如果指定策略，只统计该策略名下持仓
-- 用户提到具体 `symbol` 或 `trading context`：走 `账户 + 目标标的`
+- 用户问某策略成交、fills、交易记录：走 `策略成交简版`
+- 用户问某策略风控预算、资金池：走 `策略风控预算简版`
 
 ## 严格边界
 
 - 用户没有指定 `symbol` 时，只输出账户快览或账户概览，不要追加任何"探针结果""补一条某标的情况""顺手看下 BTCUSDT"之类内容
 - 用户只说"查询账户信息""查询账户快览""查下账户"时，默认只输出账户级摘要；即使底层 `snapshot` 带有 `positions`，也不要展开持仓明细
 - 只有用户明确要求"看看持仓""列出持仓""当前有哪些仓位""详细账户信息"时，才展开 `positions` 列表
-- 只有用户明确指定标的，或者明确要 `trading context`，才输出目标标的小节
-- 内部为了取数选择的默认标的，不属于用户请求范围，不能出现在最终回复里
+- 不要调用或输出 trading context；如果用户明确要求 trading context，回复：`当前查询技能不再读取 trading context，可以改查账户、持仓、成交或复盘数据。`
+- 用户只给标的如 `查 BTCUSDT` 时，只能从当前持仓或成交里筛这个标的；不要补行情、特征、上下文判断
 - **不要输出"数据来源""来源"之类的行**，回复应该是纯交易系统风格
 
 ## 展示规则
@@ -82,39 +82,45 @@
 - 主要持仓风险：{{risk_note}}
 ```
 
-## 账户 + 目标标的模版
+## 策略成交简版模版
 
 ```md
-当前账户概览如下：
+{{strategy_id}} 最近成交如下：
 
-- 账户权益：{{equity}}
-- 可用资金：{{available_cash}}
-- 总敞口：{{total_exposure}}
-- 当前持仓数：{{open_positions}}
-- 上次更新时间：{{updated_at}}
+- 成交数量：{{fill_count}}
+- 已实现盈亏：{{realized_pnl}}
+- 手续费：{{commission}}
 
-目标标的情况：
+最近明细：
 
-- 标的：{{symbol}}
-- 当前仓位方向：{{side}}
-- 持仓数量：{{quantity}}
-- 持仓均价：{{entry_price}}
-- 持仓名义价值：{{notional}}
-- 未实现盈亏：{{unrealized_pnl}}
-- 当前杠杆：{{leverage}}
-- 保证金模式：{{margin_type}}
+1. {{filled_at}} | {{symbol}} | {{side}} | 数量 {{quantity}} | 价格 {{price}} | 已实现盈亏 {{realized_pnl}}
 
 结论：
 
-- 当前账户是否适合继续开仓：{{opening_readiness}}
-- 主要风险提示：{{risk_note}}
+- 主要观察：{{risk_note}}
+```
+
+## 策略风控预算简版模版
+
+```md
+{{strategy_id}} 风控预算如下：
+
+- 是否启用：{{enabled}}
+- 资金分配比例：{{allocation_pct}}
+- 单笔最大名义价值比例：{{max_order_notional_pct}}
+- 单标的最大敞口比例：{{max_symbol_exposure_pct}}
+- 总敞口上限比例：{{max_total_exposure_pct}}
+- 最大持仓数：{{max_positions}}
+- 最大加仓次数：{{max_add_count}}
+- 更新时间：{{updated_at}}
 ```
 
 ## 最小字段提示
 
 - 账户快览：只需要 `equity`、`available_cash`、`total_exposure`、`unrealized_pnl`、`open_positions`、`updated_at`
 - 持仓列表：使用 `/agent/positions` 的 `items`，只需要 `symbol`、`position_side`、`quantity`、`avg_entry_price`、`unrealized_pnl`、`leverage`、`margin_type`、`owner_strategy_id`
-- 单标的查询：在账户字段基础上，再加 `symbol_position.*`
+- 策略成交：使用 `/agent/executions/recent?strategy_id=<id>` 的成交条目，只需要 `filled_at`、`symbol`、`side`、`quantity`、`price`、`realized_pnl`、`commission`
+- 策略风控预算：使用 `/agent/strategy-risk-allocations/<id>`
 
 ## 最小字段映射
 
@@ -125,14 +131,6 @@
 - `当前持仓数` <- `snapshot.open_positions`
 - `账户快照时间` <- `snapshot.updated_at`
 - `上次更新时间` <- `snapshot.updated_at`
-- `标的` <- `symbol_context.symbol`
-- `当前仓位方向` <- `symbol_context.position.side`
-- `持仓数量` <- `symbol_context.position.quantity`
-- `持仓均价` <- `symbol_context.position.entry_price`
-- `持仓名义价值` <- `symbol_context.position.notional`
-- `未实现盈亏` <- `symbol_context.position.unrealized_pnl`
-- `当前杠杆` <- `symbol_context.position.leverage`
-- `保证金模式` <- `symbol_context.position.margin_type`
 
 ## 常见回复示例
 
@@ -168,31 +166,8 @@
 - 主要持仓风险：ETH 当前处于浮亏，且账户已有多个方向暴露，建议关注整体回撤风险。
 ```
 
-### 单标的查询
+### Trading Context 不再支持
 
 ```md
-当前账户概览如下：
-
-- 账户权益：$10234.56
-- 可用资金：$8450.12
-- 总敞口：$1784.44
-- 浮动盈亏：$125.40
-- 当前持仓数：2
-- 上次更新时间：2026-05-04 16:10:00
-
-目标标的情况：
-
-- 标的：BTCUSDT
-- 当前仓位方向：多头
-- 持仓数量：0.12
-- 持仓均价：$63850.00
-- 持仓名义价值：$7662.00
-- 未实现盈亏：$125.40
-- 当前杠杆：3
-- 保证金模式：全仓
-
-结论：
-
-- 当前账户是否适合继续开仓：建议谨慎开仓
-- 主要风险提示：BTC 当前已有同向仓位，新增敞口前应先确认总风险占用。
+当前查询技能不再读取 trading context，可以改查账户、持仓、成交或复盘数据。
 ```

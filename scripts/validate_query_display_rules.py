@@ -12,6 +12,7 @@ SKILL_DIR = Path(__file__).resolve().parents[1]
 
 TARGET_FILES = [
     SKILL_DIR / "references" / "query-reply-quickstart.zh-CN.md",
+    SKILL_DIR / "references" / "review-data.zh-CN.md",
 ]
 
 LABEL_PATTERNS = [
