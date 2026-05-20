@@ -17,7 +17,7 @@
 
 ## 数据来源
 
-- 用户只问账户、账户快览、账户风险概况时，优先使用 `GET ${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/portfolio/snapshot`
+- 用户只问账户、账户快览、账户风险概况时，使用 `GET ${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/portfolio/snapshot`
 - 用户问当前持仓、持仓列表、某个策略的持仓时，使用 `GET ${ZUOGE_CRYPTO_BASE_URL}/api/v1/agent/positions`
 - 如果用户指定策略 ID，给持仓接口追加 `?strategy_id=<id>`，例如 `/api/v1/agent/positions?strategy_id=workflow_distilled_funnel`
 - 所有请求使用 `ZUOGE_CRYPTO_API_KEY` 通过 `Authorization: Bearer <key>` 认证
@@ -31,7 +31,7 @@
 ## 严格边界
 
 - 用户没有指定 `symbol` 时，只输出账户快览或账户概览，不要追加任何"探针结果""补一条某标的情况""顺手看下 BTCUSDT"之类内容
-- 用户只说"查询账户信息""查询账户快览""查下账户"时，默认只输出账户级摘要；即使底层 `snapshot` 带有 `positions`，也不要展开持仓明细
+- 用户只说"查询账户信息""查询账户快览""查下账户"时，默认只输出账户级摘要；不要展开持仓明细
 - 只有用户明确要求"看看持仓""列出持仓""当前有哪些仓位""详细账户信息"时，才展开 `positions` 列表
 - 不要调用或输出 trading context；如果用户明确要求 trading context，回复：`当前查询技能不再读取 trading context，可以改查账户、持仓或复盘数据。`
 - 用户只给标的如 `查 BTCUSDT` 时，只能从当前持仓里筛这个标的；不要补行情、特征、上下文判断
@@ -80,7 +80,7 @@
 
 ## 最小字段提示
 
-- 账户快览：只需要 `equity`、`available_cash`、`total_exposure`、`unrealized_pnl`、`open_positions`、`updated_at`
+- 账户快览：只需要 `snapshot.equity`、`snapshot.available_cash`、`snapshot.total_exposure`、`snapshot.unrealized_pnl`、`snapshot.open_positions`、`snapshot.updated_at`
 - 持仓列表：使用 `/agent/positions` 的 `items`，只需要 `symbol`、`position_side`、`quantity`、`avg_entry_price`、`unrealized_pnl`、`leverage`、`margin_type`、`owner_strategy_id`
 
 ## 最小字段映射
