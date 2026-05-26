@@ -102,3 +102,7 @@ After changing query templates or examples, run:
 ```bash
 python3 scripts/validate_query_display_rules.py
 ```
+
+### Consistency Check
+
+当用户要求"重新学习"/"re-learn"此技能时，agent 必须调用 `skill_view()` 重新读取当前 SKILL.md 和引用文件的状态，不得从记忆或历史会话中摘要复述。技能内容可能已被用户就地修改（删除路由、裁剪 scope 等），agent 的记忆可能滞后。始终以 `skill_view()` 的实时返回为准。
