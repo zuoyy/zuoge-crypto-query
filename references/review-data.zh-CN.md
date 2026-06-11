@@ -50,6 +50,13 @@ psql "$ZUOGE_CRYPTO_DATABASE_URL" -X -A -F $'\t' -v ON_ERROR_STOP=1 -c "<SQL>"
 - `strategy_risk_allocations`：策略级资金与仓位预算，适合解释某策略为什么被限额。关键字段：`strategy_id`、`venue`、`enabled`、`allocation_pct`、`max_order_notional_pct`、`max_symbol_exposure_pct`、`max_total_exposure_pct`、`max_positions`、`max_add_count`、`updated_at`。
 - `risk_limit_configs`：全局风控配置历史，适合解释系统级限额变化。
 
+## Schema 注意点
+
+- `signals` 表有 `side`（long/short，表示信号方向），但**没有** `position_side` 字段。
+- `position_side` 存在于 `fills`、`order_intents`、`signal_actions`、`position_plan_runtimes` 表中。
+- 如果需要 `position_side`，从 `fills.f.position_side` 或 `oi.position_side` 获取，不要从 `signals` 取。
+- 按订单聚合查询时（GROUP BY exchange_order_id），可从子查询中的 `fills` 直接取 `MAX(f.position_side)`，避免跨表 lateral join。
+
 ## 查询参数规则
 
 - 默认时间窗口：最近 7 天。

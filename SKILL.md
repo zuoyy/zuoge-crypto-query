@@ -79,6 +79,7 @@ Read only:
 
 - [references/query-reply-quickstart.zh-CN.md](references/query-reply-quickstart.zh-CN.md)
 - [references/review-data.zh-CN.md](references/review-data.zh-CN.md) only for review/复盘 requests
+- [references/daily-review.sql.md](references/daily-review.sql.md) only for daily cron job review (08:00→08:00 Beijing, 6 SQL queries) — loads faster than constructing queries from scratch
 
 Avoid opening signal schema, payload template, OpenAPI, or signal-generation references in this skill.
 
